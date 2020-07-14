@@ -8,51 +8,62 @@ libexpat1-dev libncurses5-dev libsdl1.2-dev libtool python2.7-dev texinfo \
 help2man libtool-bin
 #+END_SRC
 
-** configure.ac change after clone repo  :20.04:
+** checkout crosstool-ng-1.24.0 instead of crosstool-ng-1.22.0
 
 #+BEGIN_SRC
-modified   configure.ac
-@@ -190,7 +190,7 @@ AC_CACHE_VAL([ac_cv_path__BASH],
-AC_CACHE_CHECK([for bash >= 3.1], [ac_cv_path__BASH],
-		[AC_PATH_PROGS_FEATURE_CHECK([_BASH], [bash],
-				[[_BASH_ver=$($ac_path__BASH --version 2>&1 \
--                     |$EGREP '^GNU bash, version (3\.[1-9]|4)')
-+                     |$EGREP '^GNU bash, version (3\.[1-9]|4|5)')
-					test -n "$_BASH_ver" && ac_cv_path__BASH=$ac_path__BASH ac_path__BASH_found=:]],
-				[AC_MSG_RESULT([no])
-				 AC_MSG_ERROR([could not find bash >= 3.1])])])
+git checkout crosstool-ng-1.24.0
 #+END_SRC
 
-** make issue
+Otherwise with 1.22.0, we hit the following compilation issues
 
 #+BEGIN_SRC
-$ make
-  SED    'ct-ng'
-  SED    'scripts/crosstool-NG.sh'
-  SED    'scripts/saveSample.sh'
-  SED    'scripts/showTuple.sh'
-  GEN    'config/configure.in'
-  GEN    'paths.mk'
-  GEN    'paths.sh'
-  CC     'zconf.tab.o'
-In file included from zconf.tab.c:222:
-zconf.hash.c:167:1: error: conflicting types for ‘kconf_id_lookup’
-  167 | kconf_id_lookup (register const char *str, register size_t len)
-      | ^~~~~~~~~~~~~~~
-zconf.hash.c:34:31: note: previous declaration of ‘kconf_id_lookup’ was here
-   34 | static const struct kconf_id *kconf_id_lookup(register const char *str, register unsigned int len);
-      |                               ^~~~~~~~~~~~~~~
-In file included from zconf.tab.c:2420:
-confdata.c: In function ‘conf_write’:
-confdata.c:773:23: warning: ‘.tmpconfig.’ directive writing 11 bytes into a region of size between 1 and 4097 [-Wformat-overflow=]
-  773 |   sprintf(tmpname, "%s.tmpconfig.%d", dirname, (int)getpid());
-      |                       ^~~~~~~~~~~
-confdata.c:773:3: note: ‘sprintf’ output between 13 and 4119 bytes into a destination of size 4097
-  773 |   sprintf(tmpname, "%s.tmpconfig.%d", dirname, (int)getpid());
-      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-make[2]: *** [Makefile:89: zconf.tab.o] Error 1
-make[1]: *** [Makefile:167: build-lib-kconfig] Error 2
-make: *** [Makefile:127: build] Error 2
+-$ make
+-  SED    'ct-ng'
+-  SED    'scripts/crosstool-NG.sh'
+-  SED    'scripts/saveSample.sh'
+-  SED    'scripts/showTuple.sh'
+-  GEN    'config/configure.in'
+-  GEN    'paths.mk'
+-  GEN    'paths.sh'
+-  CC     'zconf.tab.o'
+-In file included from zconf.tab.c:222:
+-zconf.hash.c:167:1: error: conflicting types for ‘kconf_id_lookup’
+-  167 | kconf_id_lookup (register const char *str, register size_t len)
+-      | ^~~~~~~~~~~~~~~
+-zconf.hash.c:34:31: note: previous declaration of ‘kconf_id_lookup’ was here
+-   34 | static const struct kconf_id *kconf_id_lookup(register const char *str, register unsigned int len);
+-      |                               ^~~~~~~~~~~~~~~
+-In file included from zconf.tab.c:2420:
+-confdata.c: In function ‘conf_write’:
+-confdata.c:773:23: warning: ‘.tmpconfig.’ directive writing 11 bytes into a region of size between 1 and 4097 [-Wformat-overflow=]
+-  773 |   sprintf(tmpname, "%s.tmpconfig.%d", dirname, (int)getpid());
+-      |                       ^~~~~~~~~~~
+-confdata.c:773:3: note: ‘sprintf’ output between 13 and 4119 bytes into a destination of size 4097
+-  773 |   sprintf(tmpname, "%s.tmpconfig.%d", dirname, (int)getpid());
+-      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-make[2]: *** [Makefile:89: zconf.tab.o] Error 1
+-make[1]: *** [Makefile:167: build-lib-kconfig] Error 2
 #+END_SRC
 
+
+** configure with --prefix instead of --enable-local
+
+#+BEGIN_SRC
+./configure --prefix=$PWD
+#+END_SRC
+
+
+because make install does not support --enable-local as seen on the
+./configure --help
+
+#+BEGIN_SRC
+$ ./configure --help
+.
+.
+
+  --enable-local          run ct-ng from the current directory; 'make install'
+                          unsupported
+.
+.
+#+END_SRC
 
